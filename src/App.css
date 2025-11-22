@@ -28,10 +28,22 @@
   background-color: #34495e;
   padding: 15px 20px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand h1 {
+  margin: 0;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.navbar-nav {
+  display: flex;
   gap: 15px;
   flex-wrap: wrap;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .nav-btn {
