@@ -3,10 +3,7 @@ import React from 'react';
 function Navbar({ currentPage, setCurrentPage }) {
   return (
     <div className="navbar-container">
-      <header className="header">
-        <h1>HealthTrack</h1>
-        <p>Your Personal Fitness and Wellness Tracker</p>
-      </header>
+     
       <nav className="navbar">
       <button 
         className={currentPage === 'home' ? 'nav-btn active' : 'nav-btn'} 
