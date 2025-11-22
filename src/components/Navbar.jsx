@@ -2,7 +2,12 @@ import React from 'react';
 
 function Navbar({ currentPage, setCurrentPage }) {
   return (
-    <nav className="navbar">
+    <div className="navbar-container">
+      <header className="header">
+        <h1>HealthTrack</h1>
+        <p>Your Personal Fitness and Wellness Tracker</p>
+      </header>
+      <nav className="navbar">
       <button 
         className={currentPage === 'home' ? 'nav-btn active' : 'nav-btn'} 
         onClick={() => setCurrentPage('home')}
@@ -38,7 +43,8 @@ function Navbar({ currentPage, setCurrentPage }) {
         <span className="nav-icon"></span>
         <span className="nav-text">Progress</span>
       </button>
-    </nav>
+      </nav>
+    </div>
   );
 }
 
