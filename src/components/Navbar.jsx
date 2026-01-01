@@ -1,10 +1,14 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar({ currentPage, setCurrentPage }) {
+  const { user, logout } = useAuth();
+
   return (
     <nav className="navbar">
       <div className="navbar-brand">
         <h1>HealthTrack</h1>
+        {user && <span className="user-info">Hi, {user.username}!</span>}
       </div>
       
       <div className="navbar-nav">
@@ -42,6 +46,13 @@ function Navbar({ currentPage, setCurrentPage }) {
         >
           <span className="nav-icon"></span>
           <span className="nav-text">Progress</span>
+        </button>
+        <button 
+          className='nav-btn logout-btn' 
+          onClick={logout}
+        >
+          <span className="nav-icon"></span>
+          <span className="nav-text">Logout</span>
         </button>
       </div>
     </nav>

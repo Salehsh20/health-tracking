@@ -1,6 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { activitiesAPI, mealsAPI, exercisesAPI } from '../utils/api';
 
-function Progress({ activities, meals, exercises }) {
+function Progress() {
+  const [activities, setActivities] = useState([]);
+  const [meals, setMeals] = useState([]);
+  const [exercises, setExercises] = useState([]);
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    try {
+      const [activitiesRes, mealsRes, exercisesRes] = await Promise.all([
+        activitiesAPI.getAll(),
+        mealsAPI.getAll(),
+        exercisesAPI.getAll()
+      ]);
+
+      if (activitiesRes.success) setActivities(activitiesRes.activities);
+      if (mealsRes.success) setMeals(mealsRes.meals);
+      if (exercisesRes.success) setExercises(exercisesRes.exercises);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+  };
   // Calculate weekly statistics
   const getWeeklyData = () => {
     const today = new Date();

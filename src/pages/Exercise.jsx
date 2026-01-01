@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { exercisesAPI } from '../utils/api';
 
-function Exercise({ exercises, setExercises }) {
+function Exercise() {
+  const [exercises, setExercises] = useState([]);
   const [exerciseName, setExerciseName] = useState('');
   const [exerciseType, setExerciseType] = useState('Cardio');
   const [duration, setDuration] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    fetchExercises();
+  }, []);
+
+  const fetchExercises = async () => {
+    try {
+      const response = await exercisesAPI.getAll();
+      if (response.success) {
+        setExercises(response.exercises);
+      }
+    } catch (error) {
+      console.error('Failed to fetch exercises:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (exerciseName.trim() === '' || duration === '') {
@@ -14,25 +32,49 @@ function Exercise({ exercises, setExercises }) {
       return;
     }
 
-    const newExercise = {
-      name: exerciseName,
-      type: exerciseType,
-      duration: duration,
-      date: date
-    };
+    setLoading(true);
 
-    setExercises([...exercises, newExercise]);
-    
-    // Reset form
-    setExerciseName('');
-    setExerciseType('Cardio');
-    setDuration('');
-    setDate(new Date().toISOString().split('T')[0]);
+    try {
+      const response = await exercisesAPI.create({
+        name: exerciseName,
+        type: exerciseType,
+        duration: parseInt(duration),
+        date: date
+      });
+
+      if (response.success) {
+        await fetchExercises();
+        setExerciseName('');
+        setExerciseType('Cardio');
+        setDuration('');
+        setDate(new Date().toISOString().split('T')[0]);
+      } else {
+        alert('Failed to create exercise');
+      }
+    } catch (error) {
+      console.error('Error creating exercise:', error);
+      alert('Failed to create exercise');
+    }
+
+    setLoading(false);
   };
 
-  const handleDelete = (index) => {
-    const newExercises = exercises.filter((_, i) => i !== index);
-    setExercises(newExercises);
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this exercise?')) {
+      return;
+    }
+
+    try {
+      const response = await exercisesAPI.delete(id);
+      if (response.success) {
+        await fetchExercises();
+      } else {
+        alert('Failed to delete exercise');
+      }
+    } catch (error) {
+      console.error('Error deleting exercise:', error);
+      alert('Failed to delete exercise');
+    }
   };
 
   return (
@@ -82,7 +124,9 @@ function Exercise({ exercises, setExercises }) {
             />
           </div>
 
-          <button type="submit" className="submit-btn">Add Exercise</button>
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? 'Adding...' : 'Add Exercise'}
+          </button>
         </form>
       </div>
 
@@ -92,11 +136,11 @@ function Exercise({ exercises, setExercises }) {
           <p className="empty-message">No exercises logged yet. Start your fitness journey!</p>
         ) : (
           <div className="items-list">
-            {exercises.map((exercise, index) => (
-              <div key={index} className="item-card">
+            {exercises.map((exercise) => (
+              <div key={exercise.id} className="item-card">
                 <div className="item-header">
                   <h4>{exercise.name}</h4>
-                  <button onClick={() => handleDelete(index)} className="delete-btn">Delete</button>
+                  <button onClick={() => handleDelete(exercise.id)} className="delete-btn">Delete</button>
                 </div>
                 <p><strong>Type:</strong> {exercise.type}</p>
                 <p><strong>Duration:</strong> {exercise.duration} minutes</p>

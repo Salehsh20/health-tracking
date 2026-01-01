@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { mealsAPI } from '../utils/api';
 
-function Meals({ meals, setMeals }) {
+function Meals() {
+  const [meals, setMeals] = useState([]);
   const [mealName, setMealName] = useState('');
   const [mealType, setMealType] = useState('Breakfast');
   const [calories, setCalories] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    fetchMeals();
+  }, []);
+
+  const fetchMeals = async () => {
+    try {
+      const response = await mealsAPI.getAll();
+      if (response.success) {
+        setMeals(response.meals);
+      }
+    } catch (error) {
+      console.error('Failed to fetch meals:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (mealName.trim() === '' || calories === '') {
@@ -14,25 +32,49 @@ function Meals({ meals, setMeals }) {
       return;
     }
 
-    const newMeal = {
-      name: mealName,
-      type: mealType,
-      calories: calories,
-      date: date
-    };
+    setLoading(true);
 
-    setMeals([...meals, newMeal]);
-    
-    // Reset form
-    setMealName('');
-    setMealType('Breakfast');
-    setCalories('');
-    setDate(new Date().toISOString().split('T')[0]);
+    try {
+      const response = await mealsAPI.create({
+        name: mealName,
+        type: mealType,
+        calories: parseInt(calories),
+        date: date
+      });
+
+      if (response.success) {
+        await fetchMeals();
+        setMealName('');
+        setMealType('Breakfast');
+        setCalories('');
+        setDate(new Date().toISOString().split('T')[0]);
+      } else {
+        alert('Failed to create meal');
+      }
+    } catch (error) {
+      console.error('Error creating meal:', error);
+      alert('Failed to create meal');
+    }
+
+    setLoading(false);
   };
 
-  const handleDelete = (index) => {
-    const newMeals = meals.filter((_, i) => i !== index);
-    setMeals(newMeals);
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this meal?')) {
+      return;
+    }
+
+    try {
+      const response = await mealsAPI.delete(id);
+      if (response.success) {
+        await fetchMeals();
+      } else {
+        alert('Failed to delete meal');
+      }
+    } catch (error) {
+      console.error('Error deleting meal:', error);
+      alert('Failed to delete meal');
+    }
   };
 
   return (
@@ -82,7 +124,9 @@ function Meals({ meals, setMeals }) {
             />
           </div>
 
-          <button type="submit" className="submit-btn">Add Meal</button>
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? 'Adding...' : 'Add Meal'}
+          </button>
         </form>
       </div>
 
@@ -92,11 +136,11 @@ function Meals({ meals, setMeals }) {
           <p className="empty-message">No meals logged yet. Start tracking your nutrition!</p>
         ) : (
           <div className="items-list">
-            {meals.map((meal, index) => (
-              <div key={index} className="item-card">
+            {meals.map((meal) => (
+              <div key={meal.id} className="item-card">
                 <div className="item-header">
                   <h4>{meal.name}</h4>
-                  <button onClick={() => handleDelete(index)} className="delete-btn">Delete</button>
+                  <button onClick={() => handleDelete(meal.id)} className="delete-btn">Delete</button>
                 </div>
                 <p><strong>Type:</strong> {meal.type}</p>
                 <p><strong>Calories:</strong> {meal.calories} cal</p>

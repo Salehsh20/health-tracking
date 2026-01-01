@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { activitiesAPI } from '../utils/api';
 
-function Activities({ activities, setActivities }) {
+function Activities() {
+  const [activities, setActivities] = useState([]);
   const [activityName, setActivityName] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    try {
+      const response = await activitiesAPI.getAll();
+      if (response.success) {
+        setActivities(response.activities);
+      }
+    } catch (error) {
+      console.error('Failed to fetch activities:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (activityName.trim() === '') {
@@ -13,23 +31,47 @@ function Activities({ activities, setActivities }) {
       return;
     }
 
-    const newActivity = {
-      name: activityName,
-      description: description,
-      date: date
-    };
+    setLoading(true);
 
-    setActivities([...activities, newActivity]);
-    
-    // Reset form
-    setActivityName('');
-    setDescription('');
-    setDate(new Date().toISOString().split('T')[0]);
+    try {
+      const response = await activitiesAPI.create({
+        name: activityName,
+        description: description,
+        date: date
+      });
+
+      if (response.success) {
+        await fetchActivities();
+        setActivityName('');
+        setDescription('');
+        setDate(new Date().toISOString().split('T')[0]);
+      } else {
+        alert('Failed to create activity');
+      }
+    } catch (error) {
+      console.error('Error creating activity:', error);
+      alert('Failed to create activity');
+    }
+
+    setLoading(false);
   };
 
-  const handleDelete = (index) => {
-    const newActivities = activities.filter((_, i) => i !== index);
-    setActivities(newActivities);
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this activity?')) {
+      return;
+    }
+
+    try {
+      const response = await activitiesAPI.delete(id);
+      if (response.success) {
+        await fetchActivities();
+      } else {
+        alert('Failed to delete activity');
+      }
+    } catch (error) {
+      console.error('Error deleting activity:', error);
+      alert('Failed to delete activity');
+    }
   };
 
   return (
@@ -69,7 +111,9 @@ function Activities({ activities, setActivities }) {
             />
           </div>
 
-          <button type="submit" className="submit-btn">Add Activity</button>
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? 'Adding...' : 'Add Activity'}
+          </button>
         </form>
       </div>
 
@@ -77,11 +121,11 @@ function Activities({ activities, setActivities }) {
         <h3>Your Activities</h3>
         {activities.length === 0 ? (
           <p className="empty-message">No activities logged yet. Start by adding one above!</p>
-        ) : (
-          <div className="items-list">
-            {activities.map((activity, index) => (
-              <div key={index} className="item-card">
+        ) : () => (
+              <div key={activity.id} className="item-card">
                 <div className="item-header">
+                  <h4>{activity.name}</h4>
+                  <button onClick={() => handleDelete(activity.id
                   <h4>{activity.name}</h4>
                   <button onClick={() => handleDelete(index)} className="delete-btn">Delete</button>
                 </div>
