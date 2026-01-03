@@ -121,13 +121,13 @@ function Activities() {
         <h3>Your Activities</h3>
         {activities.length === 0 ? (
           <p className="empty-message">No activities logged yet. Start by adding one above!</p>
-        ) : () => (
+        ) : (
+          <div className="items-list">
+            {activities.map((activity) => (
               <div key={activity.id} className="item-card">
                 <div className="item-header">
                   <h4>{activity.name}</h4>
-                  <button onClick={() => handleDelete(activity.id
-                  <h4>{activity.name}</h4>
-                  <button onClick={() => handleDelete(index)} className="delete-btn">Delete</button>
+                  <button onClick={() => handleDelete(activity.id)} className="delete-btn">Delete</button>
                 </div>
                 <p>{activity.description}</p>
                 <p className="item-date">Date: {new Date(activity.date).toLocaleDateString()}</p>

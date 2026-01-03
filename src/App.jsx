@@ -8,11 +8,12 @@ import Activities from './pages/Activities';
 import Meals from './pages/Meals';
 import Exercise from './pages/Exercise';
 import Progress from './pages/Progress';
+import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
 function AppContent() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
   const [authPage, setAuthPage] = useState('login');
 
@@ -48,6 +49,8 @@ function AppContent() {
         return <Exercise />;
       case 'progress':
         return <Progress />;
+      case 'admin':
+        return user?.role === 'admin' ? <AdminDashboard /> : <Home />;
       default:
         return <Home />;
     }

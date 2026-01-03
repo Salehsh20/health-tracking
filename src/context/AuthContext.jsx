@@ -57,15 +57,18 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       const response = await authAPI.signup(userData);
+      console.log('Signup response:', response);
+      
       if (response.success) {
         localStorage.setItem('token', response.token);
         setUser(response.user);
         setIsAuthenticated(true);
         return { success: true };
       }
-      return { success: false, message: response.message };
+      return { success: false, message: response.message || 'Signup failed' };
     } catch (error) {
-      return { success: false, message: 'Signup failed' };
+      console.error('Signup error:', error);
+      return { success: false, message: error.message || 'Network error' };
     }
   };
 

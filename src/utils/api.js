@@ -17,28 +17,46 @@ const getAuthHeaders = () => {
 // Auth APIs
 export const authAPI = {
   signup: async (userData) => {
-    const response = await fetch(`${API_URL}/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Signup API error:', error);
+      return { success: false, message: 'Network error' };
+    }
   },
 
   login: async (credentials) => {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Login API error:', error);
+      return { success: false, message: 'Network error' };
+    }
   },
 
   getProfile: async () => {
-    const response = await fetch(`${API_URL}/auth/profile`, {
-      headers: getAuthHeaders()
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/auth/profile`, {
+        headers: getAuthHeaders()
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Get profile API error:', error);
+      return { success: false, message: 'Network error' };
+    }
   }
 };
 
@@ -145,6 +163,40 @@ export const exercisesAPI = {
     const response = await fetch(`${API_URL}/exercises/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
+    });
+    return response.json();
+  }
+};
+
+// Admin APIs
+export const adminAPI = {
+  getAllUsers: async () => {
+    const response = await fetch(`${API_URL}/admin/users`, {
+      headers: getAuthHeaders()
+    });
+    return response.json();
+  },
+
+  getStats: async () => {
+    const response = await fetch(`${API_URL}/admin/stats`, {
+      headers: getAuthHeaders()
+    });
+    return response.json();
+  },
+
+  deleteUser: async (id) => {
+    const response = await fetch(`${API_URL}/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return response.json();
+  },
+
+  updateUserRole: async (id, role) => {
+    const response = await fetch(`${API_URL}/admin/users/${id}/role`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ role })
     });
     return response.json();
   }

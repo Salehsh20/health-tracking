@@ -47,6 +47,15 @@ function Navbar({ currentPage, setCurrentPage }) {
           <span className="nav-icon"></span>
           <span className="nav-text">Progress</span>
         </button>
+        {user?.role === 'admin' && (
+          <button 
+            className={currentPage === 'admin' ? 'nav-btn active admin-btn' : 'nav-btn admin-btn'} 
+            onClick={() => setCurrentPage('admin')}
+          >
+            <span className="nav-icon"></span>
+            <span className="nav-text">Admin</span>
+          </button>
+        )}
         <button 
           className='nav-btn logout-btn' 
           onClick={logout}

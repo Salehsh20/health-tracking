@@ -19,11 +19,15 @@ export const loginValidation = [
 // Signup Controller
 export const signup = async (req, res) => {
   try {
+    console.log('Signup request received:', req.body);
+    
     // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ 
-        success: false, 
+        success: false,
+        message: 'Validation failed',
         errors: errors.array() 
       });
     }
@@ -37,6 +41,7 @@ export const signup = async (req, res) => {
     );
 
     if (existingUsers.length > 0) {
+      console.log('User already exists');
       return res.status(400).json({ 
         success: false, 
         message: 'User with this email or username already exists' 
@@ -45,12 +50,14 @@ export const signup = async (req, res) => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('Password hashed successfully');
 
     // Insert new user
     const [result] = await pool.query(
       'INSERT INTO users (username, email, password, full_name) VALUES (?, ?, ?, ?)',
       [username, email, hashedPassword, full_name || null]
     );
+    console.log('User inserted with ID:', result.insertId);
 
     // Generate JWT token
     const token = jwt.sign(
@@ -58,6 +65,7 @@ export const signup = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
+    console.log('JWT token generated');
 
     res.status(201).json({
       success: true,
@@ -71,10 +79,17 @@ export const signup = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('Signup error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      sqlMessage: error.sqlMessage
+    });
     res.status(500).json({ 
       success: false, 
-      message: 'Server error during registration' 
+      message: 'Server error during registration',
+      error: error.message,
+      details: error.sqlMessage || error.message
     });
   }
 };
@@ -82,11 +97,15 @@ export const signup = async (req, res) => {
 // Login Controller
 export const login = async (req, res) => {
   try {
+    console.log('Login request received:', { email: req.body.email });
+    
     // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ 
-        success: false, 
+        success: false,
+        message: 'Validation failed',
         errors: errors.array() 
       });
     }
@@ -100,6 +119,7 @@ export const login = async (req, res) => {
     );
 
     if (users.length === 0) {
+      console.log('User not found:', email);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid email or password' 
@@ -107,10 +127,12 @@ export const login = async (req, res) => {
     }
 
     const user = users[0];
+    console.log('User found:', user.username);
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
+      console.log('Invalid password for user:', user.username);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid email or password' 
@@ -123,6 +145,7 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
+    console.log('Login successful for user:', user.username);
 
     res.json({
       success: true,
@@ -132,14 +155,22 @@ export const login = async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
-        full_name: user.full_name
+        full_name: user.full_name,
+        role: user.role || 'user'
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      sqlMessage: error.sqlMessage
+    });
     res.status(500).json({ 
       success: false, 
-      message: 'Server error during login' 
+      message: 'Server error during login',
+      error: error.message,
+      details: error.sqlMessage || error.message
     });
   }
 };
@@ -148,7 +179,7 @@ export const login = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const [users] = await pool.query(
-      'SELECT id, username, email, full_name, created_at FROM users WHERE id = ?',
+      'SELECT id, username, email, full_name, role, created_at FROM users WHERE id = ?',
       [req.userId]
     );
 

@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.js';
 import activityRoutes from './routes/activities.js';
 import mealRoutes from './routes/meals.js';
 import exerciseRoutes from './routes/exercises.js';
+import adminRoutes from './routes/admin.js';
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/exercises', exerciseRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
