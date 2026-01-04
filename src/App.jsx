@@ -16,6 +16,7 @@ function AppContent() {
   const { isAuthenticated, loading, user } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
   const [authPage, setAuthPage] = useState('login');
+  const port = process.env.PORT || 4000;
 
   if (loading) {
     return (
