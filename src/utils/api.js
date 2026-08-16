@@ -1,3 +1,5 @@
+import { demoAPI, isDemoSession, findDemoAccount } from './demoData';
+
 const API_URL = 'http://localhost:5000/api';
 
 // Helper function to get auth token
@@ -32,6 +34,11 @@ export const authAPI = {
   },
 
   login: async (credentials) => {
+    // Hardcoded demo accounts work without the backend running
+    if (findDemoAccount(credentials.email, credentials.password)) {
+      return demoAPI.auth.login(credentials.email, credentials.password);
+    }
+
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -47,6 +54,8 @@ export const authAPI = {
   },
 
   getProfile: async () => {
+    if (isDemoSession()) return demoAPI.auth.getProfile();
+
     try {
       const response = await fetch(`${API_URL}/auth/profile`, {
         headers: getAuthHeaders()
@@ -60,8 +69,18 @@ export const authAPI = {
   }
 };
 
+// Wraps a set of endpoints so they are served from the in-browser demo store
+// whenever the user is logged in with a hardcoded demo account.
+const withDemoFallback = (demoHandlers, realHandlers) =>
+  Object.fromEntries(
+    Object.entries(realHandlers).map(([name, realFn]) => [
+      name,
+      async (...args) => (isDemoSession() ? demoHandlers[name](...args) : realFn(...args))
+    ])
+  );
+
 // Activities APIs
-export const activitiesAPI = {
+export const activitiesAPI = withDemoFallback(demoAPI.activities, {
   getAll: async () => {
     const response = await fetch(`${API_URL}/activities`, {
       headers: getAuthHeaders()
@@ -94,10 +113,10 @@ export const activitiesAPI = {
     });
     return response.json();
   }
-};
+});
 
 // Meals APIs
-export const mealsAPI = {
+export const mealsAPI = withDemoFallback(demoAPI.meals, {
   getAll: async () => {
     const response = await fetch(`${API_URL}/meals`, {
       headers: getAuthHeaders()
@@ -130,10 +149,10 @@ export const mealsAPI = {
     });
     return response.json();
   }
-};
+});
 
 // Exercises APIs
-export const exercisesAPI = {
+export const exercisesAPI = withDemoFallback(demoAPI.exercises, {
   getAll: async () => {
     const response = await fetch(`${API_URL}/exercises`, {
       headers: getAuthHeaders()
@@ -166,10 +185,10 @@ export const exercisesAPI = {
     });
     return response.json();
   }
-};
+});
 
 // Admin APIs
-export const adminAPI = {
+export const adminAPI = withDemoFallback(demoAPI.admin, {
   getAllUsers: async () => {
     const response = await fetch(`${API_URL}/admin/users`, {
       headers: getAuthHeaders()
@@ -200,4 +219,4 @@ export const adminAPI = {
     });
     return response.json();
   }
-};
+});

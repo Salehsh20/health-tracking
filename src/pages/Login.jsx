@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { DEMO_ACCOUNTS } from '../utils/demoData';
 
 function Login({ onSwitchToSignup }) {
   const { login } = useAuth();
@@ -20,6 +21,12 @@ function Login({ onSwitchToSignup }) {
     }
     
     setLoading(false);
+  };
+
+  const fillDemoAccount = (account) => {
+    setEmail(account.email);
+    setPassword(account.password);
+    setError('');
   };
 
   return (
@@ -57,6 +64,24 @@ function Login({ onSwitchToSignup }) {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+
+        <div className="demo-accounts">
+          <p className="demo-accounts-title">Demo accounts (no backend needed)</p>
+          {DEMO_ACCOUNTS.map((account) => (
+            <button
+              key={account.email}
+              type="button"
+              className="demo-account-btn"
+              onClick={() => fillDemoAccount(account)}
+            >
+              <span className="demo-account-role">{account.role}</span>
+              <span className="demo-account-creds">
+                {account.email} / {account.password}
+              </span>
+            </button>
+          ))}
+          <p className="demo-accounts-hint">Click an account to fill the form, then press Login.</p>
+        </div>
 
         <p className="auth-switch">
           Don't have an account?{' '}

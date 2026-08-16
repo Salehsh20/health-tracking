@@ -104,6 +104,32 @@ npm run dev
 
 The frontend will run on http://localhost:3000 (or 3001 if 3000 is busy)
 
+## Demo Login (no backend required)
+
+The app ships with two hardcoded demo accounts so you can browse every page
+without XAMPP/MySQL or the Express server running:
+
+| Role  | Email            | Password   |
+|-------|------------------|------------|
+| User  | `user@demo.com`  | `demo123`  |
+| Admin | `admin@demo.com` | `admin123` |
+
+Both are listed on the login screen — click one to fill the form, then press **Login**.
+
+While logged in with a demo account:
+- All API calls are served from an in-browser store (`localStorage`) instead of `http://localhost:5000`
+- Activities, Meals and Exercises come pre-seeded with sample data, and adding/deleting works and persists across refreshes
+- The admin account additionally unlocks the **Admin** tab with sample users and statistics
+
+Implementation lives in `src/utils/demoData.js`; `src/utils/api.js` falls back to it
+only when a demo account is signed in — any other account still goes to the real backend.
+
+To reset the demo data back to its seeded state, clear the `demoData` key in
+your browser's localStorage (DevTools → Application → Local Storage).
+
+To use the same credentials against the **real** backend, import
+`backend/demo-users.sql` in phpMyAdmin after `database.sql` and `add-admin.sql`.
+
 ## Usage
 
 1. **Sign Up**: Create a new account with username, email, and password
